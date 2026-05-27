@@ -3,9 +3,7 @@
 A full-stack web app that lets a teacher upload source material (PDF / text), pick a question mix, and have an LLM generate a structured, exam-ready question paper with answer key.
 
 ---
-## Live Link : https://assessmentforge-en7b.vercel.app/
-
----
+#Live Link : https://assessmentforge-en7b.vercel.app/
 
 ## Demo flow
 
