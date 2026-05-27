@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
@@ -429,7 +429,7 @@ function subscribeAndWait(
     });
   };
 
-  const onCompleteEvt = (_p: { assignmentId: string; output: unknown }) => {
+  const onCompleteEvt = () => {
     cleanup();
     // re-fetch to get the canonical stored doc
     fetch(

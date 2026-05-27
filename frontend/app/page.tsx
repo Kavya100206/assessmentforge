@@ -29,7 +29,7 @@ export default function HomePage() {
     socket.on('connect', setConnected);
     socket.on('disconnect', setDisconnected);
 
-    const onUpdated = (_payload: { id: string; status: string }) => {
+    const onUpdated = () => {
       fetchAssignments();
     };
     socket.on('assignment:updated', onUpdated);
