@@ -1,11 +1,12 @@
 # VedaAI — AI Assessment Creator
 
-A full-stack web app that lets a teacher upload source material (PDF / text), pick a question mix, and have an LLM generate a structured, exam-ready question paper with answer key.
+A full-stack AI-powered web application that allows teachers to upload source material (PDF/text), configure question formats, and automatically generate structured, exam-ready assessment papers with answer keys using LLMs.
 
 ---
-# Live Link : https://assessmentforge-en7b.vercel.app/
----
 
+## Live Demo :  https://assessmentforge-en7b.vercel.app/
+
+---
 ## Demo flow
 
 1. From the **Home** dashboard, click **Create Assignment**.
