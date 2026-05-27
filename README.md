@@ -2,8 +2,6 @@
 
 A full-stack web app that lets a teacher upload source material (PDF / text), pick a question mix, and have an LLM generate a structured, exam-ready question paper with answer key.
 
-Built for the VedaAI internship assignment.
-
 ---
 
 ## Demo flow
@@ -107,41 +105,6 @@ Built for the VedaAI internship assignment.
 | `generation:error`     | server→client  | `{ assignmentId, error }`                                 |
 | `assignment:updated`   | server→client  | `{ id, status }` — global broadcast, drives live dashboards |
 
----
-
-## Mongoose schema
-
-```ts
-Assignment {
-  title:            string
-  dueDate:          Date
-  questionTypes:    [{ type: string, count: number, marks: number }]
-  additionalInfo?:  string
-  fileUrl?:         string
-  status:           'pending' | 'processing' | 'completed' | 'failed'
-  generatedOutput?: {
-    schoolName:  string
-    subject:     string
-    className:   string
-    timeAllowed: number   // minutes
-    maxMarks:    number
-    sections: [{
-      title:       string  // "Section A"
-      type:        string  // "Short Answer Questions"
-      instruction: string
-      questions: [{
-        number:     number
-        text:       string
-        difficulty: 'Easy' | 'Moderate' | 'Challenging'
-        marks:      number
-      }]
-    }]
-    answerKey: [{ number: number, answer: string }]
-  }
-  createdAt:        Date
-  updatedAt:        Date
-}
-```
 
 ---
 
@@ -271,8 +234,6 @@ Expected last line: `[smoke] ✅ ALL CHECKS PASSED`.
 
 ## Approach & key decisions
 
-**Groq as the LLM.** Sub-second to a few seconds latency on the free tier, native JSON response mode, drop-in OpenAI-compatible SDK. Cuts the user-perceived wait from "uncomfortable" to "exciting".
-
 **BullMQ + a queue (not a synchronous LLM call).** The HTTP request returns in ~50 ms with an `assignmentId`; the heavy lifting happens out-of-band. This means the form can immediately show a progress overlay (driven by socket events) and the request doesn't time out on free-tier hosts. The worker has a retry-once policy on parse failures.
 
 **Sockets, with rooms per assignment + a global broadcast.** Per-assignment rooms drive the inline progress overlay during create / regenerate. A separate global `assignment:updated` event lets every dashboard (Home, Library, Assignments) live-refresh when any paper completes — no polling needed.
@@ -280,8 +241,6 @@ Expected last line: `[smoke] ✅ ALL CHECKS PASSED`.
 **In-process worker by default, separable for production.** During development the same `npm run dev` boots Express + Socket.io + the BullMQ worker, so the local loop has one command. Set `START_WORKER=false` and run `npm run worker` as a separate process if you want to scale workers independently in production.
 
 **JSON-mode LLM with strict schema validation.** The prompt sends the exact TypeScript shape required, asks for JSON only, and the worker re-validates every field (including the `difficulty` enum) before persisting. One retry on parse failure. Bad responses never reach the UI.
-
-**No component library.** Every component is hand-rolled with Tailwind utilities so the design exactly matches the Figma — no fighting a library's defaults. Only `lucide-react` is used, for icons.
 
 **Custom inline SVG illustrations.** The empty-state, groups, and library illustrations are inline SVGs, so there's no asset pipeline, no broken image links on deploy, and they scale perfectly on retina.
 
@@ -291,22 +250,4 @@ Expected last line: `[smoke] ✅ ALL CHECKS PASSED`.
 
 **File uploads.** multer to disk under `uploads/`, served via Express static. PDFs are parsed at job-time with `pdf-parse` v2 (class-based `PDFParse` API); image uploads are accepted but skipped during extraction.
 
-**Date input.** A text input with `DD-MM-YYYY` masking matches the Figma exactly, with a hidden native `<input type="date">` powering the calendar icon for free OS-level pickers.
-
-**No auth.** The assignment scope is single-teacher; the sidebar profile is hardcoded ("John Doe" / "Delhi Public School"). Adding NextAuth or Clerk later would touch only the layout + a per-request user lookup.
-
 ---
-
-## Deployment
-
-See [`DEPLOY.md`](./DEPLOY.md) for step-by-step Render (backend) + Vercel (frontend) instructions, including the env vars to set and the CORS / IP-whitelist gotchas.
-
----
-
-## What's not done
-
-- **Auth** — single-user assumption, no login.
-- **Real notify-me on `/groups`** — saves to `localStorage` only, no backend list.
-- **`/ai-toolkit` tools** — all four tools render in their disabled state; intentionally a hub for future work.
-- **PDF via server-side puppeteer** — `window.print()` is the current approach; would swap for puppeteer if pixel-perfect PDF were a hard requirement.
-- **Unit / integration tests** — verified via the end-to-end smoke script and manual testing.
